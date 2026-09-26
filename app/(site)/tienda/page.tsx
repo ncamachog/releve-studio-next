@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { PRODUCTS, whatsappUrl } from "@/lib/data";
+import { PRODUCTS, money, whatsappUrl } from "@/lib/data";
 
 export const metadata: Metadata = {
   title: "Tienda",
@@ -27,8 +27,9 @@ export default function TiendaPage() {
               </div>
               <h2 className="r-product__name">{p.name}</h2>
               <p className="r-body">{p.blurb}</p>
+              <p className="r-product__price">{money(p.price)}</p>
               <a className="r-btn r-btn--primary" href={whatsappUrl(`Hola, quiero información sobre: ${p.name}.`)} target="_blank" rel="noopener noreferrer">
-                Consultar por WhatsApp
+                Pedir por WhatsApp
               </a>
             </li>
           ))}

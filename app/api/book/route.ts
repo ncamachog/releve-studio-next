@@ -10,7 +10,7 @@ export async function POST(request: Request) {
   } catch {
     return NextResponse.json({ message: "Solicitud inválida." }, { status: 400 });
   }
-  const result = createBooking(body);
+  const result = await createBooking(body);
   if (!result.ok) return NextResponse.json({ message: result.message }, { status: result.status });
   return NextResponse.json({ ok: true, ref: result.ref, total: result.total, count: result.count });
 }

@@ -4,6 +4,6 @@ import { bookedCounts } from "@/lib/bookings";
 
 export const dynamic = "force-dynamic";
 
-export function GET() {
-  return NextResponse.json({ booked: bookedCounts(), capacity: CAPACITY });
+export async function GET() {
+  return NextResponse.json({ booked: await bookedCounts(), capacity: CAPACITY });
 }

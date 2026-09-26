@@ -1,11 +1,8 @@
+import { readList, writeList } from "@/lib/store";
 import { CAPACITY, CLASSES, DAYS_AHEAD, LEAD_MINUTES, PRICE_MONTHLY, PRICE_SINGLE, slotsForDate } from "@/lib/data";
 
 /**
- * Almacén de reservas.
- *
- * ⚠️ Vive en memoria del servidor: sirve para desarrollo y demostración, pero en Vercel
- * (serverless) NO persiste entre invocaciones. Para producción sustituye `store` por una
- * base de datos (Vercel KV / Upstash Redis, Postgres, etc.) manteniendo esta misma interfaz.
+ * Reservas: lógica de cupos/horarios. La persistencia está en `lib/store.ts`.
  */
 export interface Booking {
   id: string;
@@ -23,8 +20,9 @@ export interface Booking {
   status: "pendiente" | "confirmada" | "pagada" | "cancelada";
 }
 
-const globalStore = globalThis as unknown as { __releveBookings?: Booking[] };
-const store: Booking[] = (globalStore.__releveBookings ??= []);
+const KEY = "bookings";
+
+export const listBookings = () => readList<Booking>(KEY);
 
 const BOGOTA_OFFSET_MS = 5 * 60 * 60 * 1000; // UTC-5, sin horario de verano
 
@@ -39,9 +37,9 @@ export function slotStartMs(date: string, start: string): number {
   return new Date(`${date}T00:00:00Z`).getTime() + h * 36e5 + m * 6e4 + BOGOTA_OFFSET_MS;
 }
 
-export function bookedCounts(): Record<string, number> {
+export async function bookedCounts(): Promise<Record<string, number>> {
   const out: Record<string, number> = {};
-  for (const b of store) {
+  for (const b of await listBookings()) {
     if (b.status === "cancelada") continue;
     const k = `${b.date}|${b.start}`;
     out[k] = (out[k] ?? 0) + 1;
@@ -64,7 +62,7 @@ export type BookResult =
 
 const fail = (status: number, message: string): BookResult => ({ ok: false, status, message });
 
-export function createBooking(input: BookInput): BookResult {
+export async function createBooking(input: BookInput): Promise<BookResult> {
   if (input.website) return fail(400, "No se pudo procesar la solicitud.");
 
   const name = String(input.name ?? "").trim().slice(0, 120);
@@ -80,7 +78,9 @@ export function createBooking(input: BookInput): BookResult {
 
   const today = bogotaToday();
   const max = addDays(today, DAYS_AHEAD);
-  const counts = bookedCounts();
+  const all = await listBookings();
+  const counts: Record<string, number> = {};
+  for (const b of all) if (b.status !== "cancelada") counts[`${b.date}|${b.start}`] = (counts[`${b.date}|${b.start}`] ?? 0) + 1;
   const seen = new Set<string>();
   const valid: { date: string; classKey: string; start: string; end: string }[] = [];
 
@@ -108,7 +108,7 @@ export function createBooking(input: BookInput): BookResult {
   valid.forEach((v, i) => {
     const amount = plan === "monthly" ? (i === 0 ? PRICE_MONTHLY : 0) : PRICE_SINGLE;
     total += amount;
-    store.push({
+    all.push({
       id: `${ref}-${i}`,
       ref,
       createdAt: new Date().toISOString(),
@@ -125,5 +125,17 @@ export function createBooking(input: BookInput): BookResult {
     });
   });
 
+  await writeList(KEY, all);
+
   return { ok: true, ref, total, count: valid.length };
+}
+
+export async function setBookingStatus(ref: string, status: Booking["status"]): Promise<void> {
+  const all = await listBookings();
+  await writeList(KEY, all.map((b) => (b.ref === ref ? { ...b, status } : b)));
+}
+
+export async function deleteBookings(ref: string): Promise<void> {
+  const all = await listBookings();
+  await writeList(KEY, all.filter((b) => b.ref !== ref));
 }

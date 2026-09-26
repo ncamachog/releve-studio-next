@@ -180,12 +180,13 @@ export interface Product {
   name: string;
   img: string;
   blurb: string;
+  price: number;
 }
 
 export const PRODUCTS: Product[] = [
-  { slug: "zapatillas", name: "Zapatillas", img: "/img/product-zapatillas.jpg", blurb: "Media punta y punta para cada nivel." },
-  { slug: "mallas", name: "Mallas", img: "/img/product-mallas.jpg", blurb: "Cómodas, elásticas y con caída elegante." },
-  { slug: "faldas", name: "Faldas", img: "/img/product-faldas.jpg", blurb: "Tul y gasa para dar vuelo a cada movimiento." },
-  { slug: "medias", name: "Medias", img: "/img/product-medias.jpg", blurb: "Medias de ballet suaves y resistentes." },
-  { slug: "accesorios-para-el-cabello", name: "Accesorios para el cabello", img: "/img/product-accesorios-cabello.jpg", blurb: "Moños, cintas y redes para el peinado perfecto." },
+  { slug: "zapatillas", name: "Zapatillas", img: "/img/product-zapatillas.jpg", blurb: "Media punta y punta para cada nivel.", price: PRICE_SINGLE },
+  { slug: "mallas", name: "Mallas", img: "/img/product-mallas.jpg", blurb: "Cómodas, elásticas y con caída elegante.", price: PRICE_SINGLE },
+  { slug: "faldas", name: "Faldas", img: "/img/product-faldas.jpg", blurb: "Tul y gasa para dar vuelo a cada movimiento.", price: PRICE_SINGLE },
+  { slug: "medias", name: "Medias", img: "/img/product-medias.jpg", blurb: "Medias de ballet suaves y resistentes.", price: PRICE_SINGLE },
+  { slug: "accesorios-para-el-cabello", name: "Accesorios para el cabello", img: "/img/product-accesorios-cabello.jpg", blurb: "Moños, cintas y redes para el peinado perfecto.", price: PRICE_SINGLE },
 ];

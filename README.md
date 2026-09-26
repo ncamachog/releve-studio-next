@@ -27,9 +27,14 @@ npm run build && npm start
 | `NEXT_PUBLIC_WHATSAPP` | Número de WhatsApp sin `+` (por defecto el del sitio actual) |
 | `NEXT_PUBLIC_SITE_URL` | URL pública, para metadatos/Open Graph |
 
-## Pendientes antes de producción
+## Panel de administración
 
-1. **Reservas**: `lib/bookings.ts` guarda en memoria y en Vercel no persiste. Conecta una base de datos (Vercel KV / Upstash / Postgres) y agrega el panel de administración (en WordPress existía).
-2. **Contacto**: el formulario abre WhatsApp con el mensaje; sustitúyelo por un servicio de correo si lo prefieres.
-3. **Tienda**: es un catálogo con botón a WhatsApp (sin precios ni carrito). El carrito/checkout de WooCommerce no se migró.
-4. Las tipografías (Playfair Display + Jost) mantienen el diseño original; Geist queda como fuente de respaldo.
+`/admin` (protegido con la variable `ADMIN_PASSWORD`) muestra las clases reservadas por día y horario, con datos de contacto, cambio de estado (pendiente / confirmada / pagada / cancelada) y los mensajes del formulario de contacto.
+
+Los datos se guardan en Upstash Redis (`KV_REST_API_URL` + `KV_REST_API_TOKEN`, claves `releve:bookings` y `releve:messages`). Sin esas variables, en local se usa `.data/*.json`.
+
+## Notas
+
+1. **Tienda**: catálogo con botón a WhatsApp; todos los productos con precio provisional de $45.000 (editar `PRODUCTS` en `lib/data.ts`). El carrito/checkout de WooCommerce no se migró.
+2. Las tipografías (Playfair Display + Jost) mantienen el diseño original; Geist queda como fuente de respaldo.
+3. La base Redis se comparte con otro proyecto; las claves llevan prefijo `releve:`.

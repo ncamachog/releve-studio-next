@@ -3,16 +3,31 @@
 import { useState } from "react";
 import { whatsappUrl } from "@/lib/data";
 
-/** "Contáctanos": el formulario arma un mensaje y lo envía por WhatsApp (sin backend). */
+/** "Contáctanos": guarda el mensaje (visible en /admin) y ofrece WhatsApp como alternativa. */
 export default function ContactSection({ title = "Hablemos de tu\npróxima clase o evento.", lead = "Cuéntanos qué necesitas —clases, una coreografía o una clase para tu empresa— y te respondemos pronto.", waMessage }: { title?: string; lead?: string; waMessage?: string }) {
-  const [sent, setSent] = useState(false);
+  const [status, setStatus] = useState<"idle" | "sending" | "sent">("idle");
+  const [error, setError] = useState("");
 
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const f = new FormData(e.currentTarget);
-    const text = `Hola, soy ${f.get("name")} (${f.get("email")}${f.get("phone") ? ", " + f.get("phone") : ""}).\n${f.get("message")}`;
-    window.open(whatsappUrl(text), "_blank", "noopener,noreferrer");
-    setSent(true);
+    const form = e.currentTarget;
+    const f = new FormData(form);
+    setError("");
+    setStatus("sending");
+    try {
+      const r = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(Object.fromEntries(f.entries())),
+      });
+      const j = (await r.json()) as { message?: string };
+      if (!r.ok) throw new Error(j.message ?? "No pudimos enviar tu mensaje.");
+      form.reset();
+      setStatus("sent");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No pudimos enviar tu mensaje.");
+      setStatus("idle");
+    }
   };
 
   return (
@@ -37,8 +52,12 @@ export default function ContactSection({ title = "Hablemos de tu\npróxima clase
             <label className="r-field"><span>Correo</span><input name="email" type="email" required autoComplete="email" /></label>
             <label className="r-field"><span>Teléfono / WhatsApp</span><input name="phone" type="tel" autoComplete="tel" /></label>
             <label className="r-field"><span>Mensaje</span><textarea name="message" rows={4} required placeholder="Cuéntanos qué necesitas…" /></label>
-            <button className="r-btn r-btn--primary" type="submit">Enviar mensaje</button>
-            {sent && <p className="r-form__ok" role="status">¡Gracias! Se abrió WhatsApp para enviar tu mensaje.</p>}
+            <input type="text" name="website" className="rb-hp" tabIndex={-1} autoComplete="off" aria-hidden="true" />
+            {error && <p className="rb-error" role="alert">{error}</p>}
+            <button className="r-btn r-btn--primary" type="submit" disabled={status === "sending"}>
+              {status === "sending" ? "Enviando…" : "Enviar mensaje"}
+            </button>
+            {status === "sent" && <p className="r-form__ok" role="status">¡Gracias! Recibimos tu mensaje y te responderemos pronto.</p>}
           </form>
         </div>
       </div>
