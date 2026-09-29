@@ -1,49 +1,56 @@
 import Image from "next/image";
 import Link from "next/link";
 import { CLASSES, PROGRAMS } from "@/lib/data";
+import { getContent } from "@/lib/content";
+import { getLocale } from "@/lib/locale";
 
 const ADULTS = [
-  { src: "/img/yoga.jpg", label: "Yoga", pos: "center 30%" },
-  { src: "/img/salsa.jpg", label: "Salsa", pos: "center 25%" },
-  { src: "/img/tango.jpg", label: "Tango", pos: "center" },
+  { src: "/img/yoga.jpg", key: "yoga", pos: "center 30%" },
+  { src: "/img/salsa.jpg", key: "salsa", pos: "center 25%" },
+  { src: "/img/tango.jpg", key: "tango", pos: "center" },
 ];
 
-export default function Programs() {
+export default async function Programs() {
+  const t = getContent(await getLocale());
+  const p18 = t.programsSection;
   return (
     <section className="r-programs" id="programas">
       <div className="r-section-head" data-reveal>
-        <p className="r-kicker">Nuestros programas</p>
-        <h2 className="r-h2">Clases pensadas para cada etapa.</h2>
+        <p className="r-kicker">{p18.kicker}</p>
+        <h2 className="r-h2">{p18.title}</h2>
       </div>
 
       <div className="r-chips" data-reveal>
-        {Object.values(CLASSES).map((c) => (
-          <Link key={c.label} className="r-chip" href="/reservar-clase">{c.label}</Link>
+        {(Object.keys(CLASSES) as (keyof typeof CLASSES)[]).map((k) => (
+          <Link key={k} className="r-chip" href="/reservar-clase">{t.booking.classes[k].label}</Link>
         ))}
       </div>
 
       <div className="r-programs__grid">
         {PROGRAMS.map((p, i) => (
-          <article key={p.title} className={`r-program${p.accent ? " r-program--accent" : ""}`} data-reveal>
+          <article key={i} className={`r-program${p.accent ? " r-program--accent" : ""}`} data-reveal>
             <span className="r-program__num">{String(i + 1).padStart(2, "0")}</span>
-            <h3 className="r-h3">{p.title}</h3>
-            <p className="r-body">{p.body}</p>
+            <h3 className="r-h3">{p18.programs[i].title}</h3>
+            <p className="r-body">{p18.programs[i].body}</p>
             <Link className="r-link" href={p.href}>
-              {p.cta} <span aria-hidden="true">→</span>
+              {p18.programs[i].cta} <span aria-hidden="true">→</span>
             </Link>
           </article>
         ))}
       </div>
 
       <div className="r-adults" data-reveal>
-        <p className="r-kicker">Para jóvenes y adultos +13</p>
+        <p className="r-kicker">{p18.adults}</p>
         <div className="r-adults__grid">
-          {ADULTS.map((a) => (
-            <figure className="r-adult" key={a.label}>
-              <Image src={a.src} alt={`Clase de ${a.label.toLowerCase()}`} width={900} height={1125} style={{ objectPosition: a.pos }} />
-              <figcaption>{a.label}</figcaption>
+          {ADULTS.map((a) => {
+            const label = p18.adultLabels[a.key];
+            return (
+            <figure className="r-adult" key={a.key}>
+              <Image src={a.src} alt={p18.adultAlt(label)} width={900} height={1125} style={{ objectPosition: a.pos }} />
+              <figcaption>{label}</figcaption>
             </figure>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

@@ -4,11 +4,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { NAV, SITE } from "@/lib/data";
+import LanguageSwitcher from "./LanguageSwitcher";
+import { useLocale } from "./LocaleProvider";
 
 const QUICK = NAV.filter((n) => n.href !== "/");
 
 export default function SiteHeader() {
   const pathname = usePathname();
+  const { t } = useLocale();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -34,18 +37,20 @@ export default function SiteHeader() {
           {SITE.name}
         </Link>
 
-        <nav className="r-nav" aria-label="Principal">
+        <nav className="r-nav" aria-label={t.ui.navMain}>
           {NAV.map((n) => (
             <Link key={n.href} href={n.href} className={isActive(n.href) ? "is-active" : undefined}>
-              {n.label}
+              {t.ui.nav[n.href]}
             </Link>
           ))}
         </nav>
 
+        <LanguageSwitcher />
+
         <button
           type="button"
           className="r-burger"
-          aria-label={open ? "Cerrar menú" : "Abrir menú"}
+          aria-label={open ? t.ui.closeMenu : t.ui.openMenu}
           aria-expanded={open}
           onClick={() => setOpen((v) => !v)}
         >
@@ -55,18 +60,18 @@ export default function SiteHeader() {
         </button>
       </div>
 
-      <nav className="r-mobilemenu" aria-label="Menú móvil" hidden={!open}>
+      <nav className="r-mobilemenu" aria-label={t.ui.mobileMenu} hidden={!open}>
         {NAV.map((n) => (
           <Link key={n.href} href={n.href} className={isActive(n.href) ? "is-active" : undefined}>
-            {n.label}
+            {t.ui.nav[n.href]}
           </Link>
         ))}
       </nav>
 
-      <nav className="r-mobilebar" aria-label="Accesos rápidos">
+      <nav className="r-mobilebar" aria-label={t.ui.quickLinks}>
         {QUICK.map((n) => (
           <Link key={n.href} href={n.href}>
-            {n.label}
+            {t.ui.nav[n.href]}
           </Link>
         ))}
       </nav>

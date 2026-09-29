@@ -15,7 +15,8 @@ npm run build && npm start
 
 - `app/` — páginas: `/`, `/servicios`, `/reservar-clase`, `/tienda` y API (`/api/availability`, `/api/book`).
 - `components/` — cabecera, pie, animaciones (`MotionProvider`), secciones del inicio y el calendario de reservas.
-- `lib/data.ts` — contenido, precios, horario y catálogo. **Edita aquí** textos, clases y horarios.
+- `lib/data.ts` — precios, horario, catálogo e imágenes (datos estructurales).
+- `lib/content.ts` — **todos los textos en español e inglés**. Edita aquí cualquier copy; el idioma se elige con el selector ES/EN de la cabecera (cookie `releve-locale`, sin cambiar las URLs).
 - `lib/bookings.ts` — lógica de reservas (cupos, horarios, validación).
 - `app/globals.css` — el diseño (fondos rosados, marcos redondeados, bordes durazno) portado del tema WordPress `releve-premium`.
 - `public/img/` — imágenes.
